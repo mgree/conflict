@@ -9,6 +9,9 @@ import Control.Monad.Random
 import Text.CSV
  
 import Data.List
+import qualified Data.Set as Set
+import qualified Data.Map as Map
+import Data.Map ((!))
 
 diff_select :: RandomGen g => Int -> [a] -> Rand g [a]
 diff_select 0 _  = return []
@@ -37,7 +40,7 @@ readCSV f h = do
       if null h
       then return (header:c) -- no headers at all
       else if h == header
-      then return c -- correct headers
+      then return $ filter (\row -> length row == length h) c -- correct headers
       else do
              putStrLn $ "Parse error in " ++ f ++ 
                         ": expected header row " ++ format h ++ ", got " ++ format header
@@ -61,17 +64,30 @@ main = do
       paperCSV <- readCSV paperFile []
       let papers = concat paperCSV
           
-      conflicts <- readCSV conflictFile conflictHeaders
+      rawConflicts <- readCSV conflictFile conflictHeaders
+      
       pc <- readCSV pcFile pcHeaders
-      putStrLn "parsed successfully"
+      
+      -- pc members
+      let emails = Set.fromList $ map (\[_,_,email,_] -> email) pc
+            
+      -- filter out conflicts for non-papers and non-pc members
+      let realConflicts = filter (\[paper,_,email,_] -> 
+                                   paper `elem` papers &&
+                                   email `Set.member` emails) 
+                          rawConflicts
+      let conflicts = Map.fromListWith (++) $ 
+                      map (\[paper,_,email,_] -> (paper,[email])) realConflicts
       
       -- reorder the papers
       ordering <- evalRandIO $ permute papers
       
-      putStrLn $ intercalate "\n" $ ordering
+      let schedule = map (\paper -> paper : (Map.findWithDefault [] paper conflicts)) 
+                     ordering
+
+      putStrLn $ intercalate "\n" $ map (intercalate ",") schedule
       exitSuccess
     _ -> do 
       name <- getProgName
       putStrLn $ "Usage: " ++ name ++ " [paper list] [conflict CSV] [pc list]"
       exitFailure
-  putStrLn "gimme a sec"
