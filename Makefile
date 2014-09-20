@@ -1,6 +1,6 @@
 .PHONY : test clean
 
-ordering : ordering.hs
+ordering : ordering.hs util.hs
 	ghc $< -main-is Ordering -o $@
 
 test : ordering papers.csv conflicts1.csv conflicts2.csv pc.csv

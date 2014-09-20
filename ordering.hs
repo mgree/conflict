@@ -7,14 +7,14 @@ import System.Random
 import Control.Monad.Random
 import Control.Monad (replicateM)
 
-import Text.CSV
- 
 import Data.Ord
 import Data.Function (on)
 import Data.List
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Data.Map ((!))
+
+import Util
 
 type Paper = String
 type Email = String
@@ -60,36 +60,6 @@ repeatedGreedyOrderings :: RandomGen g => [Paper] -> Conflicts -> Int -> Rand g 
 repeatedGreedyOrderings papers conflicts runs = do
   orderings <- replicateM runs (greedyOrdering papers conflicts)
   return $ minimumBy (compare `on` cost) orderings
-
-format :: Show a => [a] -> String
-format [] = ""
-format (hd : tl) = show hd ++ " " ++ format tl
-
-readCSV :: FilePath -> [String] -> IO CSV
-readCSV f h = do
-  p <- parseCSVFromFile f
-  case p of
-    Left e -> do
-      putStrLn $ show e
-      exitFailure
-    Right (header:c) -> 
-      if null h
-      then return (header:c) -- no headers at all
-      else if h == header
-      then return $ filter (\row -> length row == length h) c -- correct headers
-      else do
-             putStrLn $ "Parse error in " ++ f ++ 
-                        ": expected header row " ++ format h ++ ", got " ++ format header
-             exitFailure
-
-paperHeaders :: [String]
-paperHeaders = []
-
-conflictHeaders :: [String]
-conflictHeaders = ["paper","title","PC email","conflict type"]
-  
-pcHeaders :: [String]                  
-pcHeaders = ["first","last","email","affiliation"]
 
 main :: IO ()
 main = do 
