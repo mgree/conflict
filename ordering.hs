@@ -131,7 +131,7 @@ main = do
       schedule <- evalRandIO $ repeatedGreedyOrderings papers conflicts 10
       
       putStrLn $ intercalate "\n" $ map (intercalate ",") schedule
-      putStrLn $ "COST: " ++ show (cost schedule)
+--      putStrLn $ "COST: " ++ show (cost schedule)
       exitSuccess
     _ -> do 
       name <- getProgName
