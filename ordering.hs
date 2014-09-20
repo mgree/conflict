@@ -16,18 +16,6 @@ import qualified Data.Set as Set
 import qualified Data.Map as Map
 import Data.Map ((!))
 
-diff_select :: RandomGen g => Int -> [a] -> Rand g [a]
-diff_select 0 _  = return []
-diff_select _ [] = error "too few elements to choose from"
-diff_select n xs = do
-  r <- getRandomR (0,n-1) 
-  let remaining = take r xs ++ drop (r+1) xs
-  rest <- diff_select (n-1) remaining
-  return $ (xs !! r) : rest
-
-permute :: RandomGen g => [a] -> Rand g [a]
-permute xs = diff_select (length xs) xs
-
 type Paper = String
 type Email = String
 
@@ -131,7 +119,6 @@ main = do
       schedule <- evalRandIO $ repeatedGreedyOrderings papers conflicts 10
       
       putStrLn $ intercalate "\n" $ map (intercalate ",") schedule
---      putStrLn $ "COST: " ++ show (cost schedule)
       exitSuccess
     _ -> do 
       name <- getProgName
