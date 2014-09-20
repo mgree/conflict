@@ -8,6 +8,8 @@ import Control.Monad.Random
 
 import Text.CSV
  
+import Data.List
+
 diff_select :: RandomGen g => Int -> [a] -> Rand g [a]
 diff_select 0 _  = return []
 diff_select _ [] = error "too few elements to choose from"
@@ -55,13 +57,18 @@ main = do
   args <- getArgs
   case args of
     [paperFile,conflictFile,pcFile] -> do
-      -- read in the papers
-      papers <- readCSV paperFile []
+      -- read in the data
+      paperCSV <- readCSV paperFile []
+      let papers = concat paperCSV
+          
       conflicts <- readCSV conflictFile conflictHeaders
       pc <- readCSV pcFile pcHeaders
-      
-      
       putStrLn "parsed successfully"
+      
+      -- reorder the papers
+      ordering <- evalRandIO $ permute papers
+      
+      putStrLn $ intercalate "\n" $ ordering
       exitSuccess
     _ -> do 
       name <- getProgName
