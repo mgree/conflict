@@ -5,6 +5,7 @@ import System.Exit
 
 import System.Random
 import Control.Monad.Random
+import Control.Monad (replicateM)
 
 import Text.CSV
  
@@ -32,6 +33,8 @@ type Email = String
 
 type Conflicts = Map.Map Paper [Email]
 
+type Schedule = [[String]]
+
 with :: Conflicts -> Paper -> [Email]
 with c p = sort $ Map.findWithDefault [] p c
 
@@ -51,13 +54,24 @@ greedySearch paper papers conflicts =
   let (next,papers') = bestChoice paper papers conflicts in
   paper : greedySearch next papers' conflicts
 
-greedy :: RandomGen g => [Paper] -> Conflicts -> Rand g [Paper]
-greedy papers conflicts = do
+greedyOrdering :: RandomGen g => [Paper] -> Conflicts -> Rand g Schedule
+greedyOrdering papers conflicts = do
   let n = length papers
   r <- getRandomR (0,n-1) 
   let pivot = papers !! r
   let papers' = take r papers ++ drop (r+1) papers
-  return $ greedySearch pivot papers' conflicts
+  let ordering = greedySearch pivot papers' conflicts
+  return $ map (\paper -> paper : (conflicts `with` paper)) ordering
+
+cost :: [[String]] -> Int
+cost [] = 0
+cost [(_:cs)] = length cs
+cost ((_:cs1):p2@(_:cs2):papers) = length cs1 - (cs1 `overlap` cs2) + cost (p2:papers)
+
+repeatedGreedyOrderings :: RandomGen g => [Paper] -> Conflicts -> Int -> Rand g Schedule
+repeatedGreedyOrderings papers conflicts runs = do
+  orderings <- replicateM runs (greedyOrdering papers conflicts)
+  return $ minimumBy (compare `on` cost) orderings
 
 format :: Show a => [a] -> String
 format [] = ""
@@ -114,12 +128,10 @@ main = do
                       map (\[paper,_,email,_] -> (paper,[email])) realConflicts
       
       -- reorder the papers
-      ordering <- evalRandIO $ greedy papers conflicts
+      schedule <- evalRandIO $ repeatedGreedyOrderings papers conflicts 10
       
-      let schedule = map (\paper -> paper : (conflicts `with` paper)) 
-                     ordering
-
       putStrLn $ intercalate "\n" $ map (intercalate ",") schedule
+      putStrLn $ "COST: " ++ show (cost schedule)
       exitSuccess
     _ -> do 
       name <- getProgName
