@@ -17,9 +17,10 @@ readCSV f h = do
       exitFailure
     Right (header:c) -> 
       if null h
-      then return (header:c) -- no headers at all
+      then return $ filter ([""] /=) (header:c) -- no headers at all
       else if h == header
-      then return $ filter (\row -> length row == length h) c -- correct headers
+      then return $ filter (\row -> row /= [""] && 
+                                    length row == length h) c -- correct headers
       else do
              putStrLn $ "Parse error in " ++ f ++ 
                         ": expected header row " ++ format h ++ ", got " ++ format header
