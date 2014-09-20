@@ -88,7 +88,7 @@ main = do
       -- reorder the papers
       schedule <- evalRandIO $ repeatedGreedyOrderings papers conflicts 10
       
-      putStrLn $ intercalate "\n" $ map (intercalate ",") schedule
+      putStr $ intercalate "\n" $ map (intercalate ",") schedule
       exitSuccess
     _ -> do 
       name <- getProgName

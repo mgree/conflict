@@ -3,4 +3,14 @@
 *.hi
 *.o
 ordering
+slides
 *~
+*.nav
+*.snm
+*.out
+*.log
+*.aux
+*.toc
+slides.pdf
+slides.tex
+
