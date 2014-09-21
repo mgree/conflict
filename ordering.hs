@@ -2,6 +2,7 @@ module Ordering where
 
 import System.Environment
 import System.Exit
+import System.IO
 
 import System.Random
 import Control.Monad.Random
@@ -36,11 +37,11 @@ bestChoice paper papers conflicts =
   let (best:rest) = map fst $ sortBy (compare `on` snd) options in
   (best,rest)
   
-greedySearch :: Paper -> [Paper] -> Conflicts -> [Paper]
-greedySearch paper [] _ = [paper]
+greedySearch :: Paper -> [Paper] -> Conflicts -> Schedule
+greedySearch paper [] conflicts = [paper : (conflicts `with` paper)]
 greedySearch paper papers conflicts =
   let (next,papers') = bestChoice paper papers conflicts in
-  paper : greedySearch next papers' conflicts
+  (paper : (conflicts `with` paper)) : greedySearch next papers' conflicts
 
 greedyOrdering :: RandomGen g => [Paper] -> Conflicts -> Rand g Schedule
 greedyOrdering papers conflicts = do
@@ -48,8 +49,7 @@ greedyOrdering papers conflicts = do
   r <- getRandomR (0,n-1) 
   let pivot = papers !! r
   let papers' = take r papers ++ drop (r+1) papers
-  let ordering = greedySearch pivot papers' conflicts
-  return $ map (\paper -> paper : (conflicts `with` paper)) ordering
+  return $ greedySearch pivot papers' conflicts
 
 cost :: [[String]] -> Int
 cost [] = 0
@@ -61,6 +61,13 @@ repeatedGreedyOrderings papers conflicts runs = do
   orderings <- replicateM runs (greedyOrdering papers conflicts)
   return $ minimumBy (compare `on` cost) orderings
 
+optimalGreedyOrdering :: [Paper] -> Conflicts -> (Schedule,[Int])
+optimalGreedyOrdering papers conflicts = (optimal,map snd costs)
+  where optimal = fst $ minimumBy (compare `on` snd) costs
+        costs = map (\s -> (s,cost s)) orderings 
+        orderings = map (\(pivot,ps) -> greedySearch pivot ps conflicts) pivots
+        pivots = [(papers !! i,take i papers ++ drop (i+1) papers) | i <- [0..length papers-1]]
+
 main :: IO ()
 main = do 
   args <- getArgs
@@ -69,10 +76,11 @@ main = do
       -- read in the data
       paperCSV <- readCSV paperFile []
       let papers = concat paperCSV
-          
+      
       rawConflicts <- readCSV conflictFile conflictHeaders
       
       pc <- readCSV pcFile pcHeaders
+      
       
       -- pc members
       let emails = Set.fromList $ map (\[_,_,email,_] -> email) pc
@@ -86,7 +94,10 @@ main = do
                       map (\[paper,_,email,_] -> (paper,[email])) realConflicts
       
       -- reorder the papers
-      schedule <- evalRandIO $ repeatedGreedyOrderings papers conflicts 10
+      -- schedule <- evalRandIO $ repeatedGreedyOrderings papers conflicts 10
+      let (schedule,costs) = optimalGreedyOrdering papers conflicts
+          
+      -- hPutStr stderr $ "Chose schedule with minimal cost " ++ show (cost schedule) ++ " out of " ++ show costs
       
       putStr $ intercalate "\n" $ map (intercalate ",") schedule
       exitSuccess
