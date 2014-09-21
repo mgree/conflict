@@ -15,9 +15,9 @@ conflictList :: Map.Map String String -> [String] -> String
 conflictList names rawConflicts =
   let conflicts = sortBy (compare `on` (asIn names)) rawConflicts in
   if null conflicts
-  then "\\textbf{No conflicts}"
-  else "  \\textbf{Conflicts}:\n" ++
-       if length conflicts > 8
+  then "  \\textbf{No conflicts}"
+  else "  \\textbf{Conflicts}:\n" ++ items conflicts
+       {- if length conflicts > 8
        then let (cs1,cs2) = splitAt (length conflicts `div` 2) conflicts in
          "  \\begin{columns}[T]\n" ++
          "  \\begin{column}[T]{5cm}\n" ++ (items cs1) ++ 
@@ -25,7 +25,7 @@ conflictList names rawConflicts =
          "  \\begin{column}[T]{5cm}\n" ++ (items cs2) ++ 
          "  \\end{column}\n" ++
          "  \\end{columns}\n"
-       else items conflicts
+       else -}
   where items cs = "  \\begin{itemize}\n" ++ 
                    concatMap conflictEntry cs ++
                    "  \\end{itemize}\n"
@@ -44,16 +44,17 @@ makeSlides _ [] = ""
 makeSlides names ((paper:rawConflicts):rest) =
   "\\begin{frame}[shrink]\n" ++
   "  \\frametitle{Paper " ++ paper ++ "}\n\n" ++
+  "\\begin{columns}[T]\n\\begin{column}{.6\\linewidth}\n\\large" ++
   conflictList names rawConflicts ++
+  "\\end{column}\n" ++
   (if not (null rest)
-   then "\\begin{columns}[T]\n\\begin{column}{.6\\linewidth}~\\end{column}\n" ++
-        "\\begin{column}{.38\\linewidth}\n" ++
+   then "\\begin{column}{.38\\linewidth}\n" ++
         (case rest of
           (next1:next2:_) -> "\\tiny\n" ++ upNext names next1 ++ upNext names next2
           [next] -> "\\tiny\n" ++ upNext names next) ++
-        "\\end{column}\n\\end{columns}\n"
+        "\\end{column}\n"
    else "") ++
-  "\\end{frame}\n\n" ++
+  "\\end{columns}\n\\end{frame}\n\n" ++
   makeSlides names rest
 
 slideDeck :: String -> String
