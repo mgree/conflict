@@ -1,5 +1,7 @@
 .PHONY : test clean
 
+all : ordering slides
+
 test : ordering slides papers.csv conflicts1.csv conflicts2.csv conflicts3.csv allpapers.csv pc.csv
 	@echo "RUNNING SMALL REGRESSIONS..."
 	./ordering papers.csv conflicts1.csv pc.csv >/dev/null
