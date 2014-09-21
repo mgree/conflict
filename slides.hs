@@ -33,9 +33,9 @@ conflictList names rawConflicts =
             Just name -> "    \\item " ++ name ++ "\n"
             Nothing -> ""
   
-upNext :: Map.Map String String -> [String] -> String
-upNext names (paper:rawConflicts) =
-  "\\begin{block}{Up next: Paper " ++ paper ++ "}\n" ++
+upNext :: String -> Map.Map String String -> [String] -> String
+upNext phrase names (paper:rawConflicts) =
+  "\\begin{block}{" ++ phrase ++ ": Paper \\#" ++ paper ++ "}\n" ++
   conflictList names rawConflicts ++
   "\\end{block}\n"
 
@@ -43,15 +43,15 @@ makeSlides :: Map.Map String String -> [[String]] -> String
 makeSlides _ [] = ""
 makeSlides names ((paper:rawConflicts):rest) =
   "\\begin{frame}[shrink]\n" ++
-  "  \\frametitle{Paper " ++ paper ++ "}\n\n" ++
+  "  \\frametitle{Paper \\#" ++ paper ++ "}\n\n" ++
   "\\begin{columns}[T]\n\\begin{column}{.6\\linewidth}\n\\large" ++
   conflictList names rawConflicts ++
   "\\end{column}\n" ++
   (if not (null rest)
    then "\\begin{column}{.38\\linewidth}\n" ++
         (case rest of
-          (next1:next2:_) -> "\\tiny\n" ++ upNext names next1 ++ upNext names next2
-          [next] -> "\\tiny\n" ++ upNext names next) ++
+          (next1:next2:_) -> "\\tiny\n" ++ upNext "Up next" names next1 ++ upNext "And then" names next2
+          [next] -> "\\tiny\n" ++ upNext "Up next (last paper)" names next) ++
         "\\end{column}\n"
    else "") ++
   "\\end{columns}\n\\end{frame}\n\n" ++
@@ -60,9 +60,11 @@ makeSlides names ((paper:rawConflicts):rest) =
 slideDeck :: String -> String
 slideDeck slides = 
   "\\documentclass{beamer}\n\n" ++
-  "\\begin{document}\n" ++
-  slides ++
-  "\\end{document}\n"
+  "\\mode<presentation>\n" ++
+  "{\n" ++
+  "\\usetheme{Philly}\n\\setbeamercovered{invisible}\n\\setbeamertemplate{navigation symbols}{}\n" ++
+  "}\n\n"++
+  "\\begin{document}\n" ++ slides ++ "\\end{document}\n"
 
 main :: IO ()
 main = do
