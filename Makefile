@@ -28,5 +28,5 @@ slides : slides.hs util.hs
 
 clean :
 	rm -f *.o *.hi ordering slides *~
-	rm -f nonpcpapers.csv.test schedule.csv.test
+	rm -f nonpcpapers.csv.test schedule.csv.test allpapers.csv.test
 	rm -f *.nav *.snm *.out *.log *.aux *.toc slides.pdf slides.tex
