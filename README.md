@@ -4,6 +4,19 @@ schedules that minimize traffic due to conflicts of interest.
 
 # How to use these scripts
 
+First, you have to build the scripts. You'll need Haskell and some packages. I've only tested on GHC 7.8.3.
+
+```
+$ make
+ghc ordering.hs -main-is Ordering -o ordering
+[1 of 2] Compiling Util             ( Util.hs, Util.o )
+[2 of 2] Compiling Ordering         ( ordering.hs, ordering.o )
+Linking ordering ...
+ghc slides.hs -main-is Slides -o slides
+[2 of 2] Compiling Slides           ( slides.hs, slides.o )
+Linking slides ...
+```
+
 There are two scripts: ordering and slides, to be run in that order.
 
 ```
