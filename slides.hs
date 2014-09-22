@@ -97,7 +97,7 @@ main = do
                   map (\[first,last,email,_] -> (email,[head first] ++ ". " ++ last)) pc
                   
       let names = Map.fromList $ 
-                  map (\[first,last,email,_] -> (email,first ++ ". " ++ last)) pc
+                  map (\[first,last,email,_] -> (email,first ++ " " ++ last)) pc
 
       let scheduleWith n = map (\(paper:rawConflicts) -> 
                            (paper,sort $ map (asIn n) rawConflicts))
