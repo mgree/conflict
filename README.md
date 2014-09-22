@@ -45,6 +45,8 @@ a list of papers; `conflicts.csv`, a list of conflicts of interest;
 `pc.csv`, a list of program committee members; and `schedule.csv`, a
 list of papers and their conflicts.
 
+Sample files are in the directory `sample/`.
+
 ## `papers.csv`
 
 The papers to be discussed are listed in `papers.csv`. Concretely, it

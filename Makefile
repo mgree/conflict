@@ -2,15 +2,16 @@
 
 all : ordering slides
 
+sample : ordering slides sample/papers.csv sample/conflicts.csv sample/pc.csv
+	@echo "RUNNING SAMPLE..."
+	(cd sample; ../ordering papers.csv conflicts.csv pc.csv >schedule.csv; diff -u schedule.expected schedule.csv; ../slides schedule.csv pc.csv > slides.tex; pdflatex slides.tex)
+	@echo "DONE."
+
 test : ordering slides papers.csv conflicts1.csv conflicts2.csv conflicts3.csv allpapers.csv pc.csv
 	@echo "RUNNING SMALL REGRESSIONS..."
 	./ordering papers.csv conflicts1.csv pc.csv >/dev/null
 	./ordering papers.csv conflicts2.csv pc.csv >/dev/null
 	./ordering allpapers.csv conflicts3.csv pc.csv >/dev/null
-	@echo "DONE."
-
-	@echo "RUNNING SAMPLE..."
-	(cd sample; ../ordering papers.csv conflicts.csv pc.csv >schedule.csv; diff -u schedule.expected schedule.csv; ../slides schedule.csv pc.csv > slides.tex; pdflatex slides.tex)
 	@echo "DONE."
 
 	@echo "RUNNING REAL TEST..."
