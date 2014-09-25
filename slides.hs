@@ -76,6 +76,8 @@ makeSlides ((paper,conflicts):rest) =
 slideDeck :: String -> String
 slideDeck slides = 
   "\\documentclass{beamer}\n\n" ++
+  "\\usepackage{pgfpages}\n" ++
+  "\\pgfpagesuselayout{resize to}[a4paper, border shrink=5mm, landscape]\n\n" ++
   "\\mode<presentation>\n" ++
   "{\n" ++
   "\\usetheme{Philly}\n\\setbeamercovered{invisible}\n\\setbeamertemplate{navigation symbols}{}\n" ++
