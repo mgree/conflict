@@ -97,6 +97,7 @@ main = do
       -- schedule <- evalRandIO $ repeatedGreedyOrderings papers conflicts 10
       let (schedule,costs) = optimalGreedyOrdering papers conflicts
           
+      hPutStr stderr $ "Schedule has " ++ show (length schedule) ++ " papers under discussion.\n"
       -- hPutStr stderr $ "Chose schedule with minimal cost " ++ show (cost schedule) ++ " out of " ++ show costs
       
       putStr $ intercalate "\n" $ map (intercalate ",") schedule
