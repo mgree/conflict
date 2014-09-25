@@ -1,6 +1,8 @@
 module Util where
 
 import System.Exit
+import System.IO
+
 import Text.CSV
  
 
@@ -22,12 +24,12 @@ readCSV f h = do
       then return $ filter (\row -> row /= [""] && 
                                     length row == length h) c -- correct headers
       else do
-             putStrLn $ "Parse error in " ++ f ++ 
-                        ": expected header row " ++ format h ++ ", got " ++ format header
-             exitFailure
+             hPutStrLn stderr $ "Parse error in " ++ f ++ ": expected header row " ++ format h ++ ", got " ++ format header
+             hPutStrLn stderr $ "Keeping calm and carrying on..."
+             return $ filter ([""] /=) (header:c)
 
 paperHeaders :: [String]
-paperHeaders = []
+paperHeaders = ["paper"]
 
 conflictHeaders :: [String]
 conflictHeaders = ["paper","title","PC email","conflict type"]

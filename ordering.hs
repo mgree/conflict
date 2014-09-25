@@ -74,7 +74,7 @@ main = do
   case args of
     [paperFile,conflictFile,pcFile] -> do
       -- read in the data
-      paperCSV <- readCSV paperFile []
+      paperCSV <- readCSV paperFile paperHeaders
       let papers = concat paperCSV
       
       rawConflicts <- readCSV conflictFile conflictHeaders
