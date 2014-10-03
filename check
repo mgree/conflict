@@ -1,0 +1,47 @@
+#!/bin/bash
+
+PROGNAME=$(basename $0)
+function usage {
+    echo "Usage: $PROGNAME [papers.csv] [schedule.csv]" 1>&2
+}
+
+if [ $# != 2 ]; then
+   usage
+   exit 2
+fi
+
+
+schedule=`basename $2`
+TMPFILE=`mktemp ${schedule}.XXXXXX` || exit 1
+
+function cleanup {
+    rm $TMPFILE
+
+    # just assume it's an error
+    if [ -z "$1" ]; then 
+        exit 1
+    else 
+        exit $1 
+    fi
+}
+
+trap cleanup SIGHUP SIGINT SIGTERM
+
+cut -f 1 -d , $2 | sort -n | uniq >$TMPFILE
+
+# if the arguments were in the wrong order, this will catch it
+if diff -q $2 $TMPFILE >/dev/null; then
+   usage
+   cleanup 2
+fi
+
+# actually do the diff
+if diff -B -q $1 $TMPFILE >/dev/null; then
+    echo "All papers were scheduled." 1>&2
+    cleanup 0;
+else
+    echo "Difference detected!" 1>&2
+    diff -y $1 $TMPFILE
+    cleanup 1
+fi
+
